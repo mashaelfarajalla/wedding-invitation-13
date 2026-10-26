@@ -8,7 +8,11 @@
 <meta name="theme-color" content="#5e4558">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Great+Vibes&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<!-- the intro's images first; Google Fonts load without blocking the first paint -->
+<link rel="preload" as="image" href="assets/poster.webp" fetchpriority="high">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/PinyonScript.woff2" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Great+Vibes&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Great+Vibes&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap"></noscript>
 <style>
 @font-face{font-family:"Pinyon Script";src:url("assets/fonts/PinyonScript.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Cormorant Garamond";src:url("assets/fonts/CormorantGaramond-Italic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
@@ -50,7 +54,7 @@ body.locked{overflow:hidden;height:100vh}
   padding:24px 16px;
   background:
     linear-gradient(180deg, rgba(61,43,58,.55), rgba(61,43,58,.8)),
-    url("assets/poster.jpg") center/cover;
+    url("assets/poster.webp") center/cover;
   overflow:hidden;
   transition:opacity 1s ease, visibility 1s;
 }
@@ -90,10 +94,14 @@ body.locked{overflow:hidden;height:100vh}
 .seal-glow{
   position:absolute;z-index:3;left:48.4%;top:49%;width:30%;aspect-ratio:1;
   transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
-  box-shadow:0 0 0 0 rgba(243,198,211,.7);
+}
+/* the pulse ring grows with transform/opacity only, so it runs on the compositor */
+.seal-glow::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  box-shadow:0 0 0 8px rgba(243,198,211,.7);
   animation:glow 2.2s ease-out infinite;
 }
-@keyframes glow{0%{box-shadow:0 0 0 0 rgba(243,198,211,.7)}100%{box-shadow:0 0 0 22px rgba(243,198,211,0)}}
+@keyframes glow{0%{transform:scale(.92);opacity:1}100%{transform:scale(1.4);opacity:0}}
 .envelope.open .seal-glow{display:none}
 .envelope.open .door-l{transform:rotateY(-115deg);opacity:0}
 .envelope.open .door-r{transform:rotateY(115deg);opacity:0}
@@ -200,8 +208,6 @@ section{margin:0 0 34px}
   background:linear-gradient(180deg,var(--plum),var(--plum-deep));
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
-.cd b.tick{animation:cdTick .45s cubic-bezier(.3,1.4,.5,1)}
-@keyframes cdTick{0%{transform:translateY(-35%);opacity:0}100%{transform:none;opacity:1}}
 .cd span{position:relative;display:block;margin-top:8px;font-size:12px;font-weight:500;letter-spacing:.5px;color:var(--muted)}
 .cd:first-child{background:linear-gradient(170deg,var(--plum) 0%,var(--plum-deep) 100%)}
 .cd:first-child::before{background:linear-gradient(180deg,rgba(255,255,255,.12),transparent)}
@@ -323,7 +329,7 @@ body.locked .dock{opacity:0;pointer-events:none;transform:translate(-50%,30px)}
 .dock-center svg{width:32px;height:32px}
 
 @media (prefers-reduced-motion:reduce){
-  .seal-glow,.heart,.map-pin,.cd b.tick{animation:none}
+  .seal-glow::after,.heart,.map-pin{animation:none}
   .reveal{opacity:1;transform:none;transition:none}
 }
 </style>
@@ -345,8 +351,8 @@ body.locked .dock{opacity:0;pointer-events:none;transform:translate(-50%,30px)}
         </div>
         <div class="gc-bot" data-bind="dateShort"></div>
       </div>
-      <img class="door door-l" src="assets/gate-left.webp" alt="" fetchpriority="high">
-      <img class="door door-r" src="assets/gate-right.webp" alt="" fetchpriority="high">
+      <img class="door door-l" src="assets/gate-left.webp" alt="" width="356" height="981" fetchpriority="high" decoding="async">
+      <img class="door door-r" src="assets/gate-right.webp" alt="" width="380" height="981" fetchpriority="high" decoding="async">
       <div class="seal-glow"></div>
     </div>
   </div>
@@ -354,27 +360,27 @@ body.locked .dock{opacity:0;pointer-events:none;transform:translate(-50%,30px)}
 
 <!-- ===== Main ===== -->
 <div class="video-frame">
-      <video id="vid" src="assets/video.mp4" poster="assets/poster.jpg" playsinline loop preload="auto" muted></video>
+      <video id="vid" src="assets/video.mp4" poster="assets/poster.webp" playsinline loop preload="none" muted></video>
       <svg class="video-text" viewBox="0 0 720 1280" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <mask id="topLineMask" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1280">
-            <image href="assets/text-mask-top.png" x="95" y="489" width="531" height="160"/>
+            <image data-href="assets/text-mask-top.png" x="95" y="489" width="531" height="160"/>
           </mask>
           <filter id="vtShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#3d2b3a" flood-opacity=".35"/></filter>
         </defs>
         <!-- clean wall from the first frame, painted over the clip's built-in text -->
         <g id="vtPatch">
-          <image href="assets/text-patch.png" x="95" y="489" width="531" height="652"/>
+          <image data-href="assets/text-patch.webp" x="95" y="489" width="531" height="652"/>
           <!-- the car's tail still crosses the first line: repaint it (from frame 205) over the patch as it drives up -->
-          <g mask="url(#topLineMask)"><image id="vtCar" href="assets/car-patch.png" x="211" y="383" width="319" height="210"/></g>
+          <g mask="url(#topLineMask)"><image id="vtCar" data-href="assets/car-patch.webp" x="211" y="383" width="319" height="210"/></g>
         </g>
         <!-- the clip's "Save The Date" (frames 36–184): clean wall tile, then per-frame tiles (156–184) with the car repainted as it drives through -->
         <svg id="savePatch" x="100" y="336" width="512" height="252" viewBox="0 0 512 252" style="visibility:hidden">
-          <image id="saveSprite" href="assets/save-patch.jpg" width="512" height="7560"/>
+          <image id="saveSprite" data-href="assets/save-patch.webp" width="512" height="7560"/>
         </svg>
         <!-- the clip's corner watermark, cleaned per frame while the car crosses it (frames 0–105), then one still tile -->
         <svg x="446" y="1214" width="116" height="42" viewBox="0 0 116 42">
-          <image id="wmSprite" href="assets/wm-sprite.png" width="116" height="4494"/>
+          <image id="wmSprite" data-href="assets/wm-sprite.webp" width="116" height="4494"/>
         </svg>
         <g filter="url(#vtShadow)">
           <text class="vt-save" x="356" y="450" data-at="1.35" data-out="4.6">Save the</text>
@@ -388,9 +394,6 @@ body.locked .dock{opacity:0;pointer-events:none;transform:translate(-50%,30px)}
           <text class="vt-date" x="355" y="1105" data-at="9.95" data-bind="dateShort"></text>
         </g>
       </svg>
-      <div class="video-ctrls">
-        <button class="ctrl" id="soundBtn" aria-label="الصوت"></button>
-      </div>
 </div>
 
 <main>
@@ -450,7 +453,7 @@ body.locked .dock{opacity:0;pointer-events:none;transform:translate(-50%,30px)}
       <div class="venue-name" data-bind="venueName"></div>
       <div class="venue-addr" data-bind="venueAddress"></div>
       <div class="map-wrap">
-        <iframe id="mapFrame" title="خريطة مكان الحفل" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <iframe id="mapFrame" title="خريطة مكان الحفل" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
         <svg class="map-pin" viewBox="0 0 44 56" aria-hidden="true">
           <path d="M22 55S3 34.5 3 21a19 19 0 0 1 38 0c0 13.5-19 34-19 34z" fill="var(--plum)" stroke="#fff" stroke-width="2.5"/>
           <path d="M22 29.5s-7.5-4.6-7.5-9.6a4 4 0 0 1 7.5-2 4 4 0 0 1 7.5 2c0 5-7.5 9.6-7.5 9.6z" fill="#fff"/>
@@ -579,6 +582,7 @@ $("dayNum").textContent = eventDate.getDate();
 $("yearNum").textContent = eventDate.getFullYear();
 
 // countdown
+const reduceMotion = matchMedia("(prefers-reduced-motion:reduce)").matches;
 function tick() {
   const diff = eventDate - Date.now();
   if (diff <= 0) { $("countdown").hidden = true; $("cdDone").hidden = false; return false; }
@@ -587,7 +591,10 @@ function tick() {
     const el = $(id), v = String(n).padStart(2, "0");
     if (el.textContent === v) return;
     el.textContent = v;
-    el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick");
+    // Web Animations restart without forcing a layout (the old offsetWidth trick did)
+    if (!reduceMotion) el.animate(
+      [{ transform: "translateY(-35%)", opacity: 0 }, { transform: "none", opacity: 1 }],
+      { duration: 450, easing: "cubic-bezier(.3,1.4,.5,1)" });
   };
   set("cdD", Math.floor(s / 86400));
   set("cdH", Math.floor(s % 86400 / 3600));
@@ -601,7 +608,13 @@ if (tick()) { const t = setInterval(() => tick() || clearInterval(t), 1000); }
 $("mapBtn").href = CONFIG.mapUrl;
 $("callBtn").href = `tel:${CONFIG.phone}`;
 $("topBtn").onclick = e => { e.preventDefault(); scrollTo({ top: 0, behavior: "smooth" }); };
-$("mapFrame").src = `https://maps.google.com/maps?q=${encodeURIComponent(CONFIG.mapQuery)}&z=15&output=embed`;
+// the map's ~240KB of Google JS only loads once the venue card is close to the screen
+const mapIO = new IntersectionObserver(([e]) => {
+  if (!e.isIntersecting) return;
+  $("mapFrame").src = `https://maps.google.com/maps?q=${encodeURIComponent(CONFIG.mapQuery)}&z=15&output=embed`;
+  mapIO.disconnect();
+}, { rootMargin: "400px 0px" });
+mapIO.observe($("venue"));
 const sendWhatsApp = text => window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
 
 // rsvp
@@ -660,7 +673,18 @@ function renderWishes() {
   }));
 }
 renderWishes();
-loadWishes();
+
+// heavy media (clip + its text-repair sprites) and the wishes request wait until the first paint is done
+let mediaLoaded = false;
+function loadMedia() {
+  if (mediaLoaded) return;
+  mediaLoaded = true;
+  document.querySelectorAll(".video-text image[data-href]").forEach(img => img.setAttribute("href", img.dataset.href));
+  $("vid").preload = "auto";
+  loadWishes();
+}
+if (document.readyState === "complete") loadMedia();
+else addEventListener("load", loadMedia);
 
 // add to calendar (.ics)
 $("calBtn").addEventListener("click", () => {
@@ -687,12 +711,10 @@ const icons = {
   off: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>',
 };
 const syncSound = () => {
-  $("soundBtn").innerHTML = vid.muted ? icons.off : icons.on;
   $("musicBtn").classList.toggle("on", !vid.muted);
 };
 syncSound();
 const toggleSound = () => { vid.muted = !vid.muted; vid.play().catch(() => {}); syncSound(); };
-$("soundBtn").onclick = toggleSound;
 $("musicBtn").onclick = toggleSound;
 // the clip fades to black from ~12.3s — loop back before the fade
 const LOOP_END = 12.1;
@@ -742,15 +764,15 @@ let opened = false;
 function openInvite() {
   if (opened) return;
   opened = true;
+  loadMedia();
   $("envelope").classList.add("open");
   vid.muted = false;
   vid.play().catch(() => { vid.muted = true; vid.play(); }).finally(syncSound);
-  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
-  if (!reduce) setTimeout(zoomCard, 1150);
+  if (!reduceMotion) setTimeout(zoomCard, 1150);
   setTimeout(() => {
     $("intro").classList.add("gone");
     document.body.classList.remove("locked");
-  }, reduce ? 1900 : 2600);
+  }, reduceMotion ? 1900 : 2600);
 }
 // scale the card from its spot to cover the whole viewport, centred
 function zoomCard() {
