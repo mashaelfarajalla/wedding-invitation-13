@@ -8,12 +8,11 @@
 <meta name="theme-color" content="#5e4558">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- the intro's images first; Google Fonts load without blocking the first paint -->
-<link rel="preload" as="image" href="assets/poster.webp" fetchpriority="high">
-<link rel="preload" as="font" type="font/woff2" href="assets/fonts/PinyonScript.woff2" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Great+Vibes&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Great+Vibes&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap"></noscript>
+<!-- the intro only needs its backdrop, the doors and Great Vibes (self-hosted below); Google Fonts are for the page behind it and load after the first paint -->
+<link rel="preload" as="image" href="assets/poster.webp">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap"></noscript>
 <style>
+@font-face{font-family:"Great Vibes";src:url("assets/fonts/GreatVibes.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Pinyon Script";src:url("assets/fonts/PinyonScript.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Cormorant Garamond";src:url("assets/fonts/CormorantGaramond-Italic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
 :root{
@@ -46,6 +45,8 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 body.locked{overflow:hidden;height:100vh}
+/* the clip sits under the intro until it opens; hiding it keeps its overlay images from being measured as the page's LCP */
+body.locked .video-frame{visibility:hidden}
 
 /* ---------- intro / envelope ---------- */
 #intro{
@@ -674,11 +675,15 @@ function renderWishes() {
 }
 renderWishes();
 
-// heavy media (clip + its text-repair sprites) and the wishes request wait until the first paint is done
+// Google Fonts, heavy media (clip + its text-repair sprites) and the wishes request wait until the first paint is done
 let mediaLoaded = false;
 function loadMedia() {
   if (mediaLoaded) return;
   mediaLoaded = true;
+  document.head.append(Object.assign(document.createElement("link"), {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap",
+  }));
   document.querySelectorAll(".video-text image[data-href]").forEach(img => img.setAttribute("href", img.dataset.href));
   $("vid").preload = "auto";
   loadWishes();
